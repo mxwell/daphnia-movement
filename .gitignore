@@ -1,0 +1,8 @@
+*.o
+*.eps
+*.log
+simulation
+*.a
+grid_unittest
+results/
+gtest-1.7.0/
