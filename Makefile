@@ -7,7 +7,7 @@ else
 	CPPFLAGS	+= -std=c++0x -Wall -Werror -Iinclude -I/usr/include
 endif
 
-OBJFILES 	= simulation.o gaussian_gen.o point.o luautils.o progressbar.o model.o
+OBJFILES 	= simulation.o point.o luautils.o progressbar.o model.o
 
 all: $(PROG)
 
@@ -16,9 +16,6 @@ $(PROG): $(OBJFILES)
 	$(CC) $(OBJFILES) $(LDFLAGS) -o $@
 
 simulation.o: simulation.cpp
-
-
-gaussian_gen.o: gaussian_gen.cpp include/gaussian_gen.h
 
 
 point.o: point.cpp include/point.h

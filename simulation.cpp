@@ -4,9 +4,6 @@
 
 #include <vector>
 
-#include <err.h>
-
-#include <gaussian_gen.h>
 #include <point.h>
 #include <progressbar.h>
 #include <model.h>
@@ -27,8 +24,10 @@ int main(int argc, char const *argv[])
 {
 	Model &model = Model::instance();
 	if ( (argc < 2 && !model.load_cfg_from_file("config.lua")) ||
-		(argc > 1 && !model.load_cfg_from_file(argv[1])))
-		err(EXIT_FAILURE, "can't load configuration");
+		(argc > 1 && !model.load_cfg_from_file(argv[1]))) {
+		puts("error: can't load configuration");
+		return 0;
+	}
 	int iterations = model.get_relaxation_iterations();
 	Point p(0, 0, 0.5, 0, 0);
 	ProgressBar progress;
