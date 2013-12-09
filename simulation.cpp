@@ -29,7 +29,7 @@ int main(int argc, char const *argv[])
 		return 0;
 	}
 	int iterations = model.get_relaxation_iterations();
-	Point p(0, 0, 0.5, 0, 0);
+	Point p(0, 0, 0, 0, 0.5, 0, 0, 0);
 	ProgressBar progress;
 	puts("\trelaxation");
 	progress.start(iterations);
@@ -49,7 +49,7 @@ int main(int argc, char const *argv[])
 	for (int it = 0; it < iterations; ++it) {
 		p = model.heun_step(p);
 		progress.check_and_move(it);
-		if ((it & 3) == 3)
+		if ((it & 15) == 15)
 			fprintf(out, "%lf\t%s\n", t, p.to_string(buf));
 		t += h;
 	}

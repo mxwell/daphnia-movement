@@ -1,6 +1,6 @@
 #! /usr/bin/ruby
 
-Fields = ['X', 'V', 'x', 'v', 'e']
+Fields = ['X', 'Y', 'Vx', 'Vy', 'x', 'v', 'e', 'psi']
 
 def gen_bin_operator(bin_operator)
 	res = "return Point("
@@ -26,4 +26,5 @@ def gen_suffix_operation
 	puts res + ");"
 end
 
+#bin_operation
 gen_suffix_operation

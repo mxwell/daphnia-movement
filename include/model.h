@@ -62,6 +62,13 @@ public:
 	void set_c(const ld &val);
 	ld get_c();
 	void set_q(const ld &val);
+	ld get_nu();
+	void set_nu(const ld &val);
+	ld get_psi0();
+	void set_psi0(const ld &val);
+	ld get_D_psi();
+	void set_D_psi(const ld &val);
+	void set_gauss_seed(int val);
 
 	ld func_Gamma(const ld &xval);
 	/* set h and its derivative */
@@ -76,6 +83,8 @@ public:
 
 	/* deterministic part of r.h.s. */
 	Point f(const Point &p);
+	/* stochastic part */
+	Point g(const Point &p);
 
 	Point heun_step(const Point &p);
 
@@ -108,6 +117,13 @@ private:
 	ld omega_0;
 	ld omega_0_2;
 	ld q;
+	/* for 2D case */
+	ld nu;
+	/* if psi0(t) is constant */
+	ld psi0;
+	ld D_psi;
+	ld sqrt_2_D_psi;
+	int model_idumm;
 
 	/* parameters of simulation */
 	int relaxation_iterations;

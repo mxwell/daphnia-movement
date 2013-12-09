@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cassert>
 #include <cstring>
+#include <gasdev.h>
 
 Model &Model::instance()
 {
@@ -17,6 +18,7 @@ Model::Model()
 #endif
 	M = 1;
 	m = 0.1;
+	model_idumm = 7;
 }
 
 #ifdef NOISE_ENABLED
@@ -156,6 +158,42 @@ void Model::set_q(const ld &val)
 	q = val;
 }
 
+ld Model::get_nu()
+{
+	return nu;
+}
+
+void Model::set_nu(const ld &val)
+{
+	nu = val;
+}
+
+ld Model::get_psi0()
+{
+	return psi0;
+}
+
+void Model::set_psi0(const ld &val)
+{
+	psi0 = val;
+}
+
+ld Model::get_D_psi()
+{
+	return D_psi;
+}
+
+void Model::set_D_psi(const ld &val)
+{
+	D_psi = val;
+	sqrt_2_D_psi = sqrt(2 * D_psi);
+}
+
+void Model::set_gauss_seed(int val)
+{
+	model_idumm = val;
+}
+
 ld Model::func_Gamma(const ld &xval)
 {
 	return Gamma_0 * (1 - C * tanh(b * xval));
@@ -281,6 +319,19 @@ bool Model::load_cfg_from_file(const char *filename)
 	if (!load_double("model.q", true))
 		return false;
 	set_q(loaded_double);
+	if (!load_double("model.nu", true))
+		return false;
+	set_nu(loaded_double);
+	if (!load_double("model.psi0", true))
+		return false;
+	set_psi0(loaded_double);
+	if (!load_double("model.angle_noise", true))
+		return false;
+	set_D_psi(loaded_double);
+	if (!load_int("model.gauss_seed"))
+		return false;
+	set_gauss_seed(loaded_int);
+	puts("seed for rng loaded");
 	lua_close(L);
 	return true;
 }
@@ -288,11 +339,22 @@ bool Model::load_cfg_from_file(const char *filename)
 Point Model::f(const Point &p)
 {
 	Point res;
-	res.X = p.V;
-	res.V = -func_Gamma(p.x) * p.V + F0_by_M + k_by_M * p.x;
+	res.X = p.Vx;
+	res.Y = p.Vy;
+	ld Gamma = func_Gamma(p.x);
+	res.Vx = -Gamma * p.Vx + F0_by_M + k_by_M * p.x * cos(p.psi);
+	res.Vy = -Gamma * p.Vy + F0_by_M + k_by_M * p.x * sin(p.psi);
 	res.x = p.v;
 	res.v = (d * p.e - gamma_0) * p.v - (omega_0_2 + k_by_m) * p.x;
 	res.e = q - c * p.e - m * d * p.v * p.v * p.e;
+	res.psi = -nu * (res.psi - psi0);
+	return res;
+}
+
+Point Model::g(const Point &p)
+{
+	Point res(0, 0, 0, 0, 0, 0, 0, 0);
+	res.psi = sqrt_2_D_psi * gasdev(&model_idumm);
 	return res;
 }
 
@@ -303,9 +365,12 @@ Point Model::heun_step(const Point &p)
 	assert(false);
 #endif
 	Point f0 = f(p);
-	Point v1 = p + f0 * h;
+	Point g0 = g(p);
+	Point v1 = p + f0 * h + g0 * sqrt_h;
 	Point f1 = f(v1);
+	Point g1 = g(v1);
 	Point f_avg = (f0 + f1) / 2;
-	Point v2 = p + f_avg * h;
+	Point g_avg = (g0 + g1) / 2;
+	Point v2 = p + f_avg * h + g_avg * sqrt_h;
 	return v2;
 }

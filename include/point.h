@@ -13,8 +13,9 @@ class Point
 	friend class Model;
 public:
 	Point() {}
-	Point(ld X, ld V, ld x, ld v, ld e) :
-		X(X), V(V), x(x), v(v), e(e) {}
+	Point(ld X, ld Y, ld Vx, ld Vy, ld x, ld v, ld e, ld psi) :
+		X(X), Y(Y), Vx(Vx), Vy(Vy),
+		x(x), v(v), e(e), psi(psi) {}
 	friend const Point operator+(const Point&, const Point&);
 	friend const Point operator-(const Point&, const Point&);
 	friend const Point operator*(const ld&, const Point&);
@@ -26,14 +27,18 @@ public:
 private:
 	/* position of particle */
 	ld X;
+	ld Y;
 	/* speed of particle */
-	ld V;
+	ld Vx;
+	ld Vy;
 	/* relative position of motor */
 	ld x;
 	/* relative speed of motor */
 	ld v;
 	/* depot */
 	ld e;
+	/* angle of motor oscillations */
+	ld psi;
 };
 
 #endif /* __SSU_KMY_POINT_H_ */
