@@ -21,6 +21,16 @@ Model::Model()
 	model_idumm = 7;
 }
 
+ld Model::get_Lsize()
+{
+	return Lsize;
+}
+
+void Model::set_Lsize(const ld &val)
+{
+	Lsize = val;
+}
+
 #ifdef NOISE_ENABLED
 ld Model::get_D_Mb()
 {
@@ -29,7 +39,7 @@ ld Model::get_D_Mb()
 
 ld Model::get_sqrt_2_D_Mb()
 {
-	return sqrt_D_Mb;
+	return sqrt_2_D_Mb;
 }
 
 void Model::set_D_Mb(const ld &val)
@@ -275,8 +285,12 @@ bool Model::load_cfg_from_file(const char *filename)
 		return false;
 	set_h(loaded_double);
 	printf("time_step %lf\n", h);
+	if (!load_double("model.spatial_period"))
+		return false;
+	set_Lsize(loaded_double);
+	printf("spatial period %lf\n", Lsize);
 #ifdef NOISE_ENABLED
-	if (!load_double(L, temp, "model.macro_noise", true))
+	if (!load_double("model.macro_noise", true))
 		return false;
 	set_D_Mb(loaded_double);
 	if (!load_double("model.motor_noise", true))
@@ -373,4 +387,16 @@ Point Model::heun_step(const Point &p)
 	Point g_avg = (g0 + g1) / 2;
 	Point v2 = p + f_avg * h + g_avg * sqrt_h;
 	return v2;
+}
+
+void Model::periodify(Point &p)
+{
+	while (p.X > Lsize - EPS)
+		p.X -= Lsize;
+	while (p.X < -EPS)
+		p.X += Lsize;
+	while (p.Y > Lsize - EPS)
+		p.Y -= Lsize;
+	while (p.Y < -EPS)
+		p.Y += Lsize;
 }

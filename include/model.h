@@ -17,20 +17,22 @@
  *		   for a time being
  */
 
- /* #define NOISE_ENABLED */
+ /*#define NOISE_ENABLED*/
 
 class Model {
 public:
 	static Model &instance();
+	ld get_Lsize();
+	void set_Lsize(const ld &val);
 
 #ifdef NOISE_ENABLED
 	ld get_D_Mb();
-	ld get_sqrt_D_Mb();
+	ld get_sqrt_2_D_Mb();
 	/* set D_Mb and its derivative */
 	void set_D_Mb(const ld &val);
 
 	ld get_D_ms();
-	ld get_sqrt_D_ms();
+	ld get_sqrt_2_D_ms();
 	/* set D_ms and its derivative */
 	void set_D_ms(const ld &val);
 #endif
@@ -87,6 +89,9 @@ public:
 	Point g(const Point &p);
 
 	Point heun_step(const Point &p);
+	/* make @p be in area with x in [0, L) and y in [0, L),
+		because space is periodic */
+	void periodify(Point &p);
 
 private:
 	Model();
@@ -124,6 +129,8 @@ private:
 	ld D_psi;
 	ld sqrt_2_D_psi;
 	int model_idumm;
+	/* spatial period */
+	ld Lsize;
 
 	/* parameters of simulation */
 	int relaxation_iterations;

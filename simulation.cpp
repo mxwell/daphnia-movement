@@ -19,7 +19,6 @@ void generate_output_name(char *name)
 	sprintf(name, "results/%s.log", timestamp_buf);
 }
 
-char buf[128];
 int main(int argc, char const *argv[])
 {
 	Model &model = Model::instance();
@@ -29,7 +28,7 @@ int main(int argc, char const *argv[])
 		return 0;
 	}
 	int iterations = model.get_relaxation_iterations();
-	Point p(0, 0, 0, 0, 0.5, 0, 0, 0);
+	Point p(4, 6, 0, 0, 0.5, 0, 0, 0);
 	ProgressBar progress;
 	puts("\trelaxation");
 	progress.start(iterations);
@@ -48,13 +47,18 @@ int main(int argc, char const *argv[])
 	ld t = model.get_relaxation_iterations() * h;
 	for (int it = 0; it < iterations; ++it) {
 		p = model.heun_step(p);
+		model.periodify(p);
+		double vx = p.get_Vx();
+		double vy = p.get_Vy();
+		double v = sqrt(vx * vx + vy * vy);
 		progress.check_and_move(it);
-		if ((it & 15) == 15)
-			fprintf(out, "%lf\t%s\n", t, p.to_string(buf));
+		if ((it & 511) == 511)
+			fprintf(out, "%lf\t%s\n", v, p.pos_to_string());
 		t += h;
 	}
 	progress.finish_successfully();
 	puts("Done");
+	printf("Results are put to %s\n", output_name);
 	fclose(out);
 	return 0;
 }

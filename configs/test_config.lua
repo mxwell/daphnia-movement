@@ -1,12 +1,13 @@
 integration = {
 	iterations = {
 		relaxation = 0,
-		observation = 100 * 1000 * 1000
+		observation = 1 * 1000 * 1000
 	},
 	time_step = 0.0005
 }
 
 model = {
+	spatial_period	= 10,
 	-- noise
 	macro_noise 	= 0.001,
 	motor_noise		= 0.0001,

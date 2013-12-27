@@ -36,10 +36,16 @@ const Point operator/(const Point& p, const ld &divisor)
 		 		 p.x / divisor, p.v / divisor, p.e / divisor, p.psi / divisor);
 }
 
-const char *Point::to_string(char *buf)
+const char *Point::to_string()
 {
 	sprintf(buf, "%lf %lf %lf %lf %lf %lf %lf %lf",
 					X, Y, Vx, Vy, x, v, e, psi);
+	return buf;
+}
+
+const char *Point::pos_to_string()
+{
+	sprintf(buf, "%lf %lf", X, Y);
 	return buf;
 }
 
@@ -58,4 +64,14 @@ bool Point::operator==(const Point &other) const
 bool Point::operator!=(const Point &other) const
 {
 	return !(*this == other);
+}
+
+double Point::get_Vx()
+{
+	return Vx;
+}
+
+double Point::get_Vy()
+{
+	return Vy;
 }

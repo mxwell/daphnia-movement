@@ -21,9 +21,12 @@ public:
 	friend const Point operator*(const ld&, const Point&);
 	friend const Point operator*(const Point&, const ld&);
 	friend const Point operator/(const Point&, const ld&);
-	const char *to_string(char *buf);
+	const char *to_string();
+	const char *pos_to_string();
 	bool operator==(const Point &other) const;
 	bool operator!=(const Point &other) const;
+	double get_Vx();
+	double get_Vy();
 private:
 	/* position of particle */
 	ld X;
@@ -39,6 +42,7 @@ private:
 	ld e;
 	/* angle of motor oscillations */
 	ld psi;
+	char buf[128];
 };
 
 #endif /* __SSU_KMY_POINT_H_ */

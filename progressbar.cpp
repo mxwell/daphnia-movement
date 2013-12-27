@@ -48,6 +48,7 @@ void ProgressBar::moveTo(int val)
 
 void ProgressBar::check_and_move(int pos)
 {
-	if ((pos & update_mask) == update_mask)
+	if ((pos & update_mask) == update_mask) {
 		moveTo(pos);
+	}
 }
