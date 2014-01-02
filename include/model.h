@@ -1,6 +1,8 @@
 #ifndef __SSU_KMY_PARAMS_H_
 #define __SSU_KMY_PARAMS_H_
 
+#include <utility>
+#include <vector>
 #include <types.h>
 #include <point.h>
 #include <luautils.h>
@@ -17,13 +19,15 @@
  *		   for a time being
  */
 
- /*#define NOISE_ENABLED*/
+ #define NOISE_ENABLED
 
 class Model {
 public:
 	static Model &instance();
 	ld get_Lsize();
 	void set_Lsize(const ld &val);
+	int get_particles_nr();
+	void set_particles_nr(int val);
 
 #ifdef NOISE_ENABLED
 	ld get_D_Mb();
@@ -52,6 +56,9 @@ public:
 	/* set k (or m) and its derivative */
 	void set_k(const ld &val);
 	void set_m(const ld &val);
+	void set_mu(const ld &val);
+	/* returns (mu / M) */
+	ld get_mu_by_M();
 	ld get_omega_0_2();
 	/* set omega_0 and its derivative */
 	void set_omega_0(const ld &val);
@@ -84,14 +91,17 @@ public:
 	bool load_cfg_from_file(const char *filename);
 
 	/* deterministic part of r.h.s. */
-	Point f(const Point &p);
+	Point f(ld ux, ld uy, const Point &p);
 	/* stochastic part */
 	Point g(const Point &p);
 
-	Point heun_step(const Point &p);
+	/* @ux and @uy are components of common speed vector,
+	   @p contains information on particle */
+	Point heun_step(ld ux, ld uy, const Point &p);
 	/* make @p be in area with x in [0, L) and y in [0, L),
 		because space is periodic */
 	void periodify(Point &p);
+	std::pair<ld, ld> get_common_speed(const std::vector<Point> &ensemble);
 
 private:
 	Model();
@@ -119,6 +129,9 @@ private:
 	ld k_by_m;
 	ld M;
 	ld m;
+	/* strength of velocities interaction */
+	ld mu;
+	ld mu_by_M;
 	ld omega_0;
 	ld omega_0_2;
 	ld q;
@@ -131,6 +144,8 @@ private:
 	int model_idumm;
 	/* spatial period */
 	ld Lsize;
+	/* number of elements in ensemble */
+	int particles_nr;
 
 	/* parameters of simulation */
 	int relaxation_iterations;

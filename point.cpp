@@ -66,12 +66,12 @@ bool Point::operator!=(const Point &other) const
 	return !(*this == other);
 }
 
-double Point::get_Vx()
+double Point::get_Vx() const
 {
 	return Vx;
 }
 
-double Point::get_Vy()
+double Point::get_Vy() const
 {
 	return Vy;
 }

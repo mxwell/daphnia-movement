@@ -25,8 +25,8 @@ public:
 	const char *pos_to_string();
 	bool operator==(const Point &other) const;
 	bool operator!=(const Point &other) const;
-	double get_Vx();
-	double get_Vy();
+	double get_Vx() const;
+	double get_Vy() const;
 private:
 	/* position of particle */
 	ld X;

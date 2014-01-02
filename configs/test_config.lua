@@ -1,13 +1,14 @@
 integration = {
 	iterations = {
-		relaxation = 0,
-		observation = 1 * 1000 * 1000
+		relaxation = 10 * 1000,
+		observation = 1 * 100 * 1000
 	},
 	time_step = 0.0005
 }
 
 model = {
 	spatial_period	= 10,
+	number_of_particles = 10,
 	-- noise
 	macro_noise 	= 0.001,
 	motor_noise		= 0.0001,
@@ -20,6 +21,8 @@ model = {
 	M 		= 2,
 	-- mass of motor
 	m 		= 0.2,
+	-- interaction strength
+	mu		= 2.0,
 
 	c 		= 0.1,
 	d 		= 0.1,

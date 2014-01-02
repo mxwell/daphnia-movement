@@ -31,6 +31,16 @@ void Model::set_Lsize(const ld &val)
 	Lsize = val;
 }
 
+int Model::get_particles_nr()
+{
+	return particles_nr;
+}
+
+void Model::set_particles_nr(int val)
+{
+	particles_nr = val;
+}
+
 #ifdef NOISE_ENABLED
 ld Model::get_D_Mb()
 {
@@ -60,7 +70,6 @@ ld Model::get_sqrt_2_D_ms()
 
 void Model::set_D_ms(const ld &val)
 {
-	assert(false); /* no support for noisy case */
 	D_ms = val;
 	sqrt_2_D_ms = sqrt(2 * D_ms);
 }
@@ -87,6 +96,7 @@ void Model::set_M(const ld &val)
 	M = val;
 	F0_by_M = F0 / M;
 	k_by_M = k / M;
+	mu_by_M = mu / M;
 }
 
 ld Model::get_k_by_M()
@@ -110,6 +120,17 @@ void Model::set_m(const ld &val)
 {
 	m = val;
 	k_by_m = k / m;
+}
+
+void Model::set_mu(const ld &val)
+{
+	mu = val;
+	mu_by_M = mu / M;
+}
+
+ld Model::get_mu_by_M()
+{
+	return mu_by_M;
 }
 
 ld Model::get_omega_0_2()
@@ -289,6 +310,10 @@ bool Model::load_cfg_from_file(const char *filename)
 		return false;
 	set_Lsize(loaded_double);
 	printf("spatial period %lf\n", Lsize);
+	if (!load_int("model.number_of_particles"))
+		return false;
+	set_particles_nr(loaded_int);
+	printf("number of particles %d\n", particles_nr);
 #ifdef NOISE_ENABLED
 	if (!load_double("model.macro_noise", true))
 		return false;
@@ -312,6 +337,9 @@ bool Model::load_cfg_from_file(const char *filename)
 	if (!load_double("model.m", true))
 		return false;
 	set_m(loaded_double);
+	if (!load_double("model.mu", true))
+		return false;
+	set_mu(loaded_double);
 	if (!load_double("model.c", true))
 		return false;
 	set_c(loaded_double);
@@ -350,14 +378,16 @@ bool Model::load_cfg_from_file(const char *filename)
 	return true;
 }
 
-Point Model::f(const Point &p)
+Point Model::f(ld ux, ld uy, const Point &p)
 {
 	Point res;
 	res.X = p.Vx;
 	res.Y = p.Vy;
 	ld Gamma = func_Gamma(p.x);
-	res.Vx = -Gamma * p.Vx + F0_by_M + k_by_M * p.x * cos(p.psi);
-	res.Vy = -Gamma * p.Vy + F0_by_M + k_by_M * p.x * sin(p.psi);
+	res.Vx = -Gamma * p.Vx + F0_by_M + k_by_M * p.x * cos(p.psi) +
+		mu_by_M * (ux - p.Vx);
+	res.Vy = -Gamma * p.Vy + F0_by_M + k_by_M * p.x * sin(p.psi) +
+		mu_by_M * (uy - p.Vy);
 	res.x = p.v;
 	res.v = (d * p.e - gamma_0) * p.v - (omega_0_2 + k_by_m) * p.x;
 	res.e = q - c * p.e - m * d * p.v * p.v * p.e;
@@ -368,20 +398,19 @@ Point Model::f(const Point &p)
 Point Model::g(const Point &p)
 {
 	Point res(0, 0, 0, 0, 0, 0, 0, 0);
+	res.Vx = sqrt_2_D_Mb * gasdev(&model_idumm);
+	res.Vy = sqrt_2_D_Mb * gasdev(&model_idumm);
+	res.v = sqrt_2_D_ms * gasdev(&model_idumm);
 	res.psi = sqrt_2_D_psi * gasdev(&model_idumm);
 	return res;
 }
 
-Point Model::heun_step(const Point &p)
+Point Model::heun_step(ld ux, ld uy, const Point &p)
 {
-	/*return p + f(p) * h;*/
-#ifdef NOISE_ENABLED
-	assert(false);
-#endif
-	Point f0 = f(p);
+	Point f0 = f(ux, uy, p);
 	Point g0 = g(p);
 	Point v1 = p + f0 * h + g0 * sqrt_h;
-	Point f1 = f(v1);
+	Point f1 = f(ux, uy, v1);
 	Point g1 = g(v1);
 	Point f_avg = (f0 + f1) / 2;
 	Point g_avg = (g0 + g1) / 2;
@@ -399,4 +428,14 @@ void Model::periodify(Point &p)
 		p.Y -= Lsize;
 	while (p.Y < -EPS)
 		p.Y += Lsize;
+}
+
+std::pair<ld, ld> Model::get_common_speed(const std::vector<Point> &ensemble)
+{
+	ld vx = 0, vy = 0;
+	for (auto const &p : ensemble) {
+		vx += p.get_Vx();
+		vy += p.get_Vy();
+	}
+	return std::make_pair(vx, vy);
 }

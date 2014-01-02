@@ -10,6 +10,11 @@
 
 using namespace std;
 
+template<typename Number> inline Number sqr(const Number &x)
+{
+	return (x) * (x);
+}
+
 void generate_output_name(char *name)
 {
 	char timestamp_buf[64];
@@ -28,12 +33,40 @@ int main(int argc, char const *argv[])
 		return 0;
 	}
 	int iterations = model.get_relaxation_iterations();
-	Point p(4, 6, 0, 0, 0.5, 0, 0, 0);
+	vector<Point> ensemble;
+	{
+		int total = model.get_particles_nr();
+		int rows = static_cast<int>(sqrt(static_cast<double>(total)));
+		assert (rows > 0);
+		int columns = (total + (rows - 1)) / rows;
+		assert(rows * columns >= total);
+		ld between_rows = model.get_Lsize() / (rows + 1);
+		ld between_columns = model.get_Lsize() / (columns + 1);
+		for (int x = 0; x < columns; ++x) {
+			for (int y = 0; y < rows; ++y) {
+				if (static_cast<int>(ensemble.size()) >= total)
+					break;
+				ld hor_pos = between_columns * (x + 1);
+				ld ver_pos = between_rows * (y + 1);
+				Point p(hor_pos, ver_pos, 
+						0, 0 ,
+						0.3 + (ensemble.size() % 5) * 0.1, 0,
+						0, 0);
+				ensemble.push_back(p);
+			}
+			if (static_cast<int>(ensemble.size()) >= total)
+				break;
+		}
+	}
 	ProgressBar progress;
 	puts("\trelaxation");
 	progress.start(iterations);
 	for (int it = 0; it < iterations; ++it) {
-		p = model.heun_step(p);
+		auto u = model.get_common_speed(ensemble);
+		for (auto &p : ensemble) {
+			p = model.heun_step(u.first, u.second, p);
+			model.periodify(p);
+		}
 		progress.check_and_move(it);
 	}
 	progress.finish_successfully();
@@ -46,14 +79,20 @@ int main(int argc, char const *argv[])
 	ld h = model.get_h();
 	ld t = model.get_relaxation_iterations() * h;
 	for (int it = 0; it < iterations; ++it) {
-		p = model.heun_step(p);
-		model.periodify(p);
-		double vx = p.get_Vx();
-		double vy = p.get_Vy();
-		double v = sqrt(vx * vx + vy * vy);
+		auto u = model.get_common_speed(ensemble);
+		for (auto &p : ensemble) {
+			p = model.heun_step(u.first, u.second, p);
+			model.periodify(p);
+		}
 		progress.check_and_move(it);
-		if ((it & 511) == 511)
-			fprintf(out, "%lf\t%s\n", v, p.pos_to_string());
+		if ((it & 511) == 511) {
+			auto u = model.get_common_speed(ensemble);
+			ld u_abs = sqrt(sqr(u.first) + sqr(u.second));
+			fprintf(out, "%lf", u_abs);
+			for (auto &p : ensemble)
+				fprintf(out, "\t%s", p.pos_to_string());
+			fprintf(out, "\n");
+		}
 		t += h;
 	}
 	progress.finish_successfully();
