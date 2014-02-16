@@ -37,7 +37,9 @@ void ProgressBar::finish(bool result)
 
 void ProgressBar::moveTo(int val)
 {
+#if 0
 	printf("\nmoving to %d\n", val);
+#endif
 	assert(active);
 	val = val * length / process_length;
 	while (cur < val && cur < length) {

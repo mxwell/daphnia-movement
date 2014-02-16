@@ -1,17 +1,17 @@
 integration = {
 	iterations = {
-		relaxation = 10 * 1000,
-		observation = 1 * 100 * 1000
+		relaxation = 1 * 1000,
+		observation = 1000 * 1000
 	},
 	time_step = 0.0005
 }
 
 model = {
 	spatial_period	= 10,
-	number_of_particles = 10,
+	number_of_particles = 400,
 	-- noise
 	macro_noise 	= 0.001,
-	motor_noise		= 0.0001,
+	motor_noise	= 0.0001,
 	-- function \Gamma(x)
 	Gamma_0	= 1,
 	C		= 0.5,
@@ -28,13 +28,14 @@ model = {
 	d 		= 0.1,
 	F0		= 0.0,
 	--gamma_0 = 0.01,
-	gamma_0 = 0.5,
+	gamma_0 	= 0.5,
 	k 		= 0.1,
 	--omega_0	= 0.5,
-	omega_0	= 0.3,
+	omega_0		= 1.0,
 	q		= 1,
 	nu		= 0,
-	psi0	= 0,
+	psi0		= 0,
 	angle_noise	= 0.005,
 	gauss_seed	= 7
 }
+

@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <ctime>
 
 #include <vector>
@@ -24,6 +25,11 @@ void generate_output_name(char *name)
 	sprintf(name, "results/%s.log", timestamp_buf);
 }
 
+ld rand_from_range(ld fm, ld to)
+{
+	return rand() * (to - fm) / RAND_MAX + fm;
+}
+
 int main(int argc, char const *argv[])
 {
 	Model &model = Model::instance();
@@ -40,6 +46,7 @@ int main(int argc, char const *argv[])
 		assert (rows > 0);
 		int columns = (total + (rows - 1)) / rows;
 		assert(rows * columns >= total);
+		printf("Particles will be put on grid %dX%d\n", rows, columns);
 		ld between_rows = model.get_Lsize() / (rows + 1);
 		ld between_columns = model.get_Lsize() / (columns + 1);
 		for (int x = 0; x < columns; ++x) {
@@ -50,7 +57,7 @@ int main(int argc, char const *argv[])
 				ld ver_pos = between_rows * (y + 1);
 				Point p(hor_pos, ver_pos, 
 						0, 0 ,
-						0.3 + (ensemble.size() % 5) * 0.1, 0,
+						rand_from_range(-2.5, 2.5), 0,
 						0, 0);
 				ensemble.push_back(p);
 			}
@@ -63,6 +70,18 @@ int main(int argc, char const *argv[])
 	progress.start(iterations);
 	for (int it = 0; it < iterations; ++it) {
 		auto u = model.get_common_speed(ensemble);
+		ld u_abs = sqrt(sqr(u.first) + sqr(u.second));
+		if (std::isnan(u_abs)) {
+			printf("\nError: common speed value "
+				"appears to be NaN at it = %d\n", it);
+			return 0;
+		}
+		if (u_abs > 1e6) {
+			printf("\nError: common speed value "
+				"appears to be too large at it = %d: %lf\n",
+				it, u_abs);
+			return 0;
+		}
 		for (auto &p : ensemble) {
 			p = model.heun_step(u.first, u.second, p);
 			model.periodify(p);
@@ -76,8 +95,6 @@ int main(int argc, char const *argv[])
 	char output_name[128];
 	generate_output_name(output_name);
 	FILE *out = fopen(output_name, "wt");
-	ld h = model.get_h();
-	ld t = model.get_relaxation_iterations() * h;
 	for (int it = 0; it < iterations; ++it) {
 		auto u = model.get_common_speed(ensemble);
 		for (auto &p : ensemble) {
@@ -85,15 +102,27 @@ int main(int argc, char const *argv[])
 			model.periodify(p);
 		}
 		progress.check_and_move(it);
-		if ((it & 511) == 511) {
+		if ((it & 127) == 127) {
 			auto u = model.get_common_speed(ensemble);
 			ld u_abs = sqrt(sqr(u.first) + sqr(u.second));
+			if (std::isnan(u_abs)) {
+				printf("\nError: common speed value "
+					"appears to be NaN at it = %d\n", it);
+				fclose(out);
+				return 0;
+			}
+			if (u_abs > 1e6) {
+				printf("\nError: common speed value "
+					"appears to be too large at it = %d: %lf\n",
+					it, u_abs);
+				fclose(out);
+				return 0;
+			}
 			fprintf(out, "%lf", u_abs);
 			for (auto &p : ensemble)
 				fprintf(out, "\t%s", p.pos_to_string());
 			fprintf(out, "\n");
 		}
-		t += h;
 	}
 	progress.finish_successfully();
 	puts("Done");
@@ -101,3 +130,4 @@ int main(int argc, char const *argv[])
 	fclose(out);
 	return 0;
 }
+

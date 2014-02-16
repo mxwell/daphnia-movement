@@ -437,5 +437,6 @@ std::pair<ld, ld> Model::get_common_speed(const std::vector<Point> &ensemble)
 		vx += p.get_Vx();
 		vy += p.get_Vy();
 	}
-	return std::make_pair(vx, vy);
+	int denom = static_cast<int>(ensemble.size());
+	return std::make_pair(vx / denom, vy / denom);
 }
