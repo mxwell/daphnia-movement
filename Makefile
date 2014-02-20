@@ -7,7 +7,7 @@ else
 	CPPFLAGS	+= -std=c++0x -Wall -Werror -Iinclude -I/usr/include
 endif
 
-OBJFILES 	= simulation.o point.o luautils.o progressbar.o model.o
+OBJFILES 	= simulation.o fft.o point.o luautils.o progressbar.o model.o
 
 all: $(PROG)
 
@@ -17,15 +17,13 @@ $(PROG): $(OBJFILES)
 
 simulation.o: simulation.cpp
 
+fft.o: fft.cpp
 
 point.o: point.cpp include/point.h
 
-
 luautils.o: luautils.cpp include/luautils.h
 
-
 progressbar.o: progressbar.cpp include/progressbar.h
-
 
 model.o: model.cpp include/model.h
 

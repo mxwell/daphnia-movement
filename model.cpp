@@ -261,6 +261,21 @@ int Model::get_observation_iterations()
 	return observation_iterations;
 }
 
+void Model::set_dumps_period(int val)
+{
+	if (val < 1)
+		val = 1;
+	int biggest_bit = 31;
+	while ((val & (1 << biggest_bit)) == 0)
+		--biggest_bit;
+	dumps_period = 1 << biggest_bit;
+}
+
+int Model::get_dumps_period_mask()
+{
+	return dumps_period - 1;
+}
+
 bool Model::load_double(const char *key, bool verbose)
 {
 	if (lua_numberexpr(L, key, &loaded_double) == 0) {
@@ -302,6 +317,11 @@ bool Model::load_cfg_from_file(const char *filename)
 	set_observation_iterations(loaded_int);
 	printf("relaxation during %d, observation during %d iterations\n",
 		relaxation_iterations, observation_iterations);
+	if (!load_int("integration.iterations.dumps_period"))
+		return false;
+	set_dumps_period(loaded_int);
+	printf("state will be recorded every %d steps\n",
+		get_dumps_period_mask() + 1);
 	if (!load_double("integration.time_step"))
 		return false;
 	set_h(loaded_double);

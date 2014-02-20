@@ -1,7 +1,11 @@
+-- this is comment, i.e text between '--' and end of line will be ignored
+
 integration = {
 	iterations = {
 		relaxation = 1 * 1000,
-		observation = 1000 * 1000
+		observation = 100 * 1000,
+		-- for every series of @dumps_period iterations one state record will be done
+		dumps_period = 8
 	},
 	time_step = 0.0005
 }

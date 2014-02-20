@@ -87,6 +87,8 @@ public:
 	int get_relaxation_iterations();
 	void set_observation_iterations(int val);
 	int get_observation_iterations();
+	void set_dumps_period(int val);
+	int get_dumps_period_mask();
 
 	bool load_cfg_from_file(const char *filename);
 
@@ -150,6 +152,12 @@ private:
 	/* parameters of simulation */
 	int relaxation_iterations;
 	int observation_iterations;
+	/*
+	 * For every series of @dumps_period iterations one state record will be
+	 *  done trace file. The value should be power of two
+	 *  (because moment can be matched by AND operation with mask)
+	 */
+	int dumps_period;	
 	ld h;
 	ld sqrt_h;
 
